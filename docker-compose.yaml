@@ -1,0 +1,27 @@
+services:
+  ros-desktop-vnc:
+    image: sylar/ros2-desktop-vnc:humble
+    ## Network mode
+    # network_mode: host
+    ## IPC sharing mode
+    # ipc: host
+    # pid: host    
+    ## seccomp profile must be deactivated for Ubuntu 22.04
+    security_opt:
+      - seccomp:unconfined
+    ## Shared memory size
+    shm_size: '512m'
+    ## Reboot policy
+    restart: unless-stopped
+    ## Container name
+    container_name: ros2_desktop_vnc
+    ## Container system hostname
+    hostname: remotepc
+    ## To solve some issue with VNC
+    extra_hosts:
+      - "remotepc:127.0.0.1"
+    ## Port mapping. Not needed if host network mode is used.
+    # ports:
+    #   - "6080:6080"
+    volumes:
+      - /path/to/your/ws/src:/home/turtle/ros2_ws/src
