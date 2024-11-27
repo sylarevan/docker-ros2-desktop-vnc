@@ -17,7 +17,7 @@ docker run -p 6080:80 --security-opt seccomp=unconfined --shm-size=512m tiryoh/r
 
 Browse http://127.0.0.1:6080/.
 
-![Image from Gyazo](https://i.gyazo.com/ab43ab3f6dc10b5186416499e49d0bbe.jpg)
+![Image from Gyazo](desktop.png)
 
 ## Build
 
