@@ -1,9 +1,6 @@
 # docker-ros2-desktop-vnc
 Dockerfile to provide a ROS2 container with gazebo Fortress and VNC, based on [Tiryoh/docker-ros2-desktop-vnc](https://github.com/Tiryoh/docker-ros2-desktop-vnc)
 
-There are official ROS 2 Docker images provided by Open Robotics.  
-https://github.com/osrf/docker_images/blob/master/README.md#official-library
-
 ## Quick Start
 
 Run the docker container and access with port `6080`.  
@@ -11,8 +8,24 @@ Change the `shm-size` value depending on the situation.
 
 __NOTE__: `--security-opt seccomp=unconfined` flag is required to launch humble image. See https://github.com/Tiryoh/docker-ros2-desktop-vnc/pull/56.
 
+An example `docker-compose.yaml` is provided, e.g.
+
 ```
-docker run -p 6080:80 --security-opt seccomp=unconfined --shm-size=512m tiryoh/ros2-desktop-vnc:humble
+services:
+  ros-desktop-vnc:
+    image: sylar/ros2-desktop-vnc:humble
+    ## seccomp profile must be deactivated for Ubuntu 22.04
+    security_opt:
+      - seccomp:unconfined
+    shm_size: '512m'
+    restart: unless-stopped
+    container_name: ros2_desktop_vnc
+    hostname: remotepc
+    ## To solve some issue with VNC
+    extra_hosts:
+      - "remotepc:127.0.0.1"
+    volumes:
+      - /path/to/your/ws/src:/home/turtle/ros2_ws/src
 ```
 
 Browse http://127.0.0.1:6080/.
