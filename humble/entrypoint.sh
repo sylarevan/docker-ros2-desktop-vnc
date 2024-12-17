@@ -81,7 +81,10 @@ grep -F "source /opt/ros/$ROS_DISTRO/setup.bash" $BASHRC_PATH || echo "source /o
 grep -F "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" $BASHRC_PATH || echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> $BASHRC_PATH
 echo 'source $HOME/ros2_ws/install/local_setup.bash' >> $BASHRC_PATH
 echo 'export TURTLEBOT3_MODEL="waffle"' >> $BASHRC_PATH
-echo 'export ROS_DOMAIN_ID=0' >> $BASHRC_PATH
+echo 'export ROS_DOMAIN_ID=30' >> $BASHRC_PATH
+echo 'export ROS_LOCALHOST_ONLY=1' >> $BASHRC_PATH
+echo 'export ROBOT_IP=192.168.0.10' >> $BASHRC_PATH
+echo 'alias zenoh="zenoh-bridge-ros2dds -e tcp/$ROBOT_IP:7447"'
 echo 'alias colcon_clear="rm -r build install log"' >> $BASHRC_PATH
 chown $USER:$USER $BASHRC_PATH
 # colcon default configuration

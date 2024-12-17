@@ -32,6 +32,12 @@ Browse http://127.0.0.1:6080/.
 
 ![Image from Gyazo](desktop.png)
 
+## Make the container communicate with an external host
+
+The image also includes [`zenoh-bridge-ros2dds`](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds). It allows the container to communicate with an external host (e.g. a robot), which is not always possible even in host mode (in particular with a Windows or macos host). Note that [`zenoh-bridge-ros2dds`](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds) must also be installed on the robot.
+
+Consider the robot has an IP address `192.168.0.10`. On the robot, launch `zenoh-bridge-ros2dds`. Then you can connect the docker container to the robot trough the zenoh bridge by typing in a terminal inside the container: `zenoh-bridge-ros2dds -e tcp/192.168.0.10:7447`. Then, both hosts (the robot and the container) will communicate together through the bridge. Note that for that purpose, as indicated in `zenoh-bridge-ros2dds` [documentation](https://github.com/eclipse-zenoh/zenoh-plugin-ros2dds?tab=readme-ov-file#usage), `ROS_LOCALHOST_ONLY` environment variable has been set to 1 to make sure that NO DDS communication can occur between 2 hosts that are bridged by `zenoh-bridge-ros2dds`. This can be changed in the `.bashrc` file if needed.
+
 ## Build
 
 To build Docker image from this Dockerfile, run the following command.

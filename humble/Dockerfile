@@ -96,6 +96,7 @@ RUN apt-get update -q && \
     apt-get update -q && \
     apt-get install -y ros-${ROS_DISTRO}-${INSTALL_PACKAGE} \
     ros-${ROS_DISTRO}-turtlebot3-msgs \
+    ros-${ROS_DISTRO}-turtlebot3-description \
     python3-argcomplete \
     python3-colcon-common-extensions \
     python3-rosdep python3-vcstool && \
@@ -110,6 +111,14 @@ RUN curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyri
     apt-get update -q && \
     apt-get install -y ignition-fortress \
     ros-${ROS_DISTRO}-ros-gz && \
+    apt-get autoclean && \
+    apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install zenoh-bridge-ros2dds
+RUN echo "deb [trusted=yes] https://download.eclipse.org/zenoh/debian-repo/ /" | sudo tee -a /etc/apt/sources.list > /dev/null && \
+    apt-get update -q && \
+    apt-get install -y zenoh-bridge-ros2dds && \
     apt-get autoclean && \
     apt-get autoremove && \
     rm -rf /var/lib/apt/lists/*
