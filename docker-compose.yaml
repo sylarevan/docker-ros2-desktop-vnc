@@ -1,10 +1,10 @@
 services:
   ros-desktop-vnc:
     image: sylar/ros2-desktop-vnc:humble
-    ## Network mode, default is bridge 
+    ## Network mode, default is bridge
     #network_mode: host
     #ipc: host
-    #pid: host    
+    #pid: host
     ## seccomp profile must be deactivated for Ubuntu 22.04
     security_opt:
       - seccomp:unconfined

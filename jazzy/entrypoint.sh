@@ -5,41 +5,41 @@ USER=${USER:-root}
 HOME=/root
 if [ "$USER" != "root" ]; then
     echo "* enable custom user: $USER"
-    useradd --create-home --shell /bin/bash --user-group --groups adm,sudo $USER
+    useradd --create-home --shell /bin/bash --user-group --groups adm,sudo "$USER"
     echo "$USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
     if [ -z "$PASSWORD" ]; then
         echo "  set default password to \"ubuntu\""
         PASSWORD=ubuntu
     fi
-    HOME=/home/$USER
+    HOME="/home/$USER"
     echo "$USER:$PASSWORD" | /usr/sbin/chpasswd 2> /dev/null || echo ""
-    cp -r /root/{.config,.gtkrc-2.0,.asoundrc} ${HOME} 2>/dev/null
-    chown -R $USER:$USER ${HOME}
+    cp -r /root/{.config,.gtkrc-2.0,.asoundrc} "$HOME" 2>/dev/null
+    chown -R "$USER:$USER" "$HOME"
     [ -d "/dev/snd" ] && chgrp -R adm /dev/snd
 fi
 
 # VNC password
 VNC_PASSWORD=${PASSWORD:-ubuntu}
 
-mkdir -p $HOME/.vnc
-echo $VNC_PASSWORD | vncpasswd -f > $HOME/.vnc/passwd
-chmod 600 $HOME/.vnc/passwd
-chown -R $USER:$USER $HOME
+mkdir -p "$HOME/.vnc"
+echo "$VNC_PASSWORD" | vncpasswd -f > "$HOME/.vnc/passwd"
+chmod 600 "$HOME/.vnc/passwd"
+chown -R "$USER:$USER" "$HOME"
 sed -i "s/password = WebUtil.getConfigVar('password');/password = '$VNC_PASSWORD'/" /usr/lib/novnc/app/ui.js
 
 # xstartup
-XSTARTUP_PATH=$HOME/.vnc/xstartup
-cat << EOF > $XSTARTUP_PATH
+XSTARTUP_PATH="$HOME/.vnc/xstartup"
+cat << EOF > "$XSTARTUP_PATH"
 #!/bin/sh
 unset DBUS_SESSION_BUS_ADDRESS
 mate-session
 EOF
-chown $USER:$USER $XSTARTUP_PATH
-chmod 755 $XSTARTUP_PATH
+chown "$USER:$USER" "$XSTARTUP_PATH"
+chmod 755 "$XSTARTUP_PATH"
 
 # vncserver launch
-VNCRUN_PATH=$HOME/.vnc/vnc_run.sh
-cat << EOF > $VNCRUN_PATH
+VNCRUN_PATH="$HOME/.vnc/vnc_run.sh"
+cat << EOF > "$VNCRUN_PATH"
 #!/bin/sh
 
 # Workaround for issue when image is created with "docker commit".
@@ -54,9 +54,9 @@ if [ -e /tmp/.X11-unix/X1 ]; then
 fi
 
 if [ $(uname -m) = "aarch64" ]; then
-    LD_PRELOAD=/lib/aarch64-linux-gnu/libgcc_s.so.1 vncserver :5 -fg -geometry 1920x1080 -depth 24
+    LD_PRELOAD=/lib/aarch64-linux-gnu/libgcc_s.so.1 vncserver :1 -fg -geometry 1920x1080 -depth 24
 else
-    vncserver :5 -fg -geometry 1920x1080 -depth 24
+    vncserver :1 -fg -geometry 1920x1080 -depth 24
 fi
 EOF
 
@@ -69,24 +69,23 @@ user=root
 [program:vnc]
 command=gosu '$USER' bash '$VNCRUN_PATH'
 [program:novnc]
-command=gosu '$USER' bash -c "websockify --web=/usr/lib/novnc 6080 localhost:5905"
+command=gosu '$USER' bash -c "websockify --web=/usr/lib/novnc 6080 localhost:5901"
 EOF
 
 # colcon
-BASHRC_PATH=$HOME/.bashrc
+BASHRC_PATH="$HOME/.bashrc"
 cp /root/.bashrc $BASHRC_PATH
 echo "" >> $BASHRC_PATH
 echo "# ROS2 configuration" >> $BASHRC_PATH
-grep -F "source /opt/ros/$ROS_DISTRO/setup.bash" $BASHRC_PATH || echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> $BASHRC_PATH
-grep -F "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" $BASHRC_PATH || echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> $BASHRC_PATH
+grep -F "source /opt/ros/$ROS_DISTRO/setup.bash" "$BASHRC_PATH" || echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> "$BASHRC_PATH"
+grep -F "export ROS_AUTOMATIC_DISCOVERY_RANGE=" "$BASHRC_PATH" || echo "export ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST" >> "$BASHRC_PATH"
 echo 'source $HOME/ros2_ws/install/local_setup.bash' >> $BASHRC_PATH
-echo 'export TURTLEBOT3_MODEL="burger"' >> $BASHRC_PATH
+echo 'export TURTLEBOT3_MODEL="waffle"' >> $BASHRC_PATH
 echo 'export ROS_DOMAIN_ID=30' >> $BASHRC_PATH
-echo 'export ROS_LOCALHOST_ONLY=1' >> $BASHRC_PATH
 echo 'export ROBOT_IP=192.168.0.10' >> $BASHRC_PATH
-echo 'alias zenoh="zenoh-bridge-ros2dds -e tcp/$ROBOT_IP:7447"'
+echo 'alias zenoh="zenoh-bridge-ros2dds -e tcp/$ROBOT_IP:7447"' >> $BASHRC_PATH
 echo 'alias colcon_clear="rm -r build install log"' >> $BASHRC_PATH
-chown $USER:$USER $BASHRC_PATH
+chown "$USER:$USER" "$BASHRC_PATH"
 # colcon default configuration
 mkdir $HOME/.colcon
 cat << EOF > $HOME/.colcon/default.yaml
@@ -99,73 +98,13 @@ EOF
 chown -R $USER:$USER $HOME/.colcon
 
 # Fix rosdep permission
-mkdir -p $HOME/.ros
-cp -r /root/.ros/rosdep $HOME/.ros/rosdep
-chown -R $USER:$USER $HOME/.ros
-
-# ssh to robot. Put the public key on the robot!
-mkdir -p $HOME/.ssh
-chmod 700 $HOME/.ssh
-cat << EOF > $HOME/.ssh/id_rsa_turtlebot3
------BEGIN OPENSSH PRIVATE KEY-----
-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
------END OPENSSH PRIVATE KEY-----
-EOF
-chmod 600 $HOME/.ssh/id_rsa_turtlebot3
-touch $HOME/.ssh/config
-chmod 600 $HOME/.ssh/config
-echo 'Match host="192.168.*"' >> $HOME/.ssh/config
-echo 'IdentityFile ~/.ssh/id_rsa_turtlebot3' >> $HOME/.ssh/config
+mkdir -p "$HOME/.ros"
+cp -r /root/.ros/rosdep "$HOME/.ros/rosdep"
+chown -R "$USER:$USER" "$HOME/.ros"
 
 # Add terminator shortcut
-mkdir -p $HOME/Desktop
-cat << EOF > $HOME/Desktop/terminator.desktop
+mkdir -p "$HOME/Desktop"
+cat << EOF > "$HOME/Desktop/terminator.desktop"
 [Desktop Entry]
 Name=Terminator
 Comment=Multiple terminals in one window
@@ -183,7 +122,7 @@ Name=Open a New Window
 Exec=terminator
 TargetEnvironment=Unity
 EOF
-cat << EOF > $HOME/Desktop/firefox.desktop
+cat << EOF > "$HOME/Desktop/firefox.desktop"
 [Desktop Entry]
 Version=1.0
 Name=Firefox Web Browser
@@ -253,7 +192,7 @@ Comment[nb]=Surf på nettet
 Comment[nl]=Verken het internet
 Comment[nn]=Surf på nettet
 Comment[no]=Surf på nettet
-Comment[pl]=Przeglądanie stron WWW 
+Comment[pl]=Przeglądanie stron WWW
 Comment[pt]=Navegue na Internet
 Comment[pt_BR]=Navegue na Internet
 Comment[ro]=Navigați pe Internet
@@ -325,7 +264,7 @@ Keywords[it]=Internet;WWW;Browser;Web;Navigatore
 Keywords[is]=Internet;WWW;Vafri;Vefur;Netvafri;Flakk
 Keywords[ja]=Internet;WWW;Web;インターネット;ブラウザ;ウェブ;エクスプローラ
 Keywords[nb]=Internett;WWW;Nettleser;Explorer;Web;Browser;Nettside
-Keywords[nl]=Internet;WWW;Browser;Web;Explorer;Verkenner;Website;Surfen;Online 
+Keywords[nl]=Internet;WWW;Browser;Web;Explorer;Verkenner;Website;Surfen;Online
 Keywords[pt]=Internet;WWW;Browser;Web;Explorador;Navegador
 Keywords[pt_BR]=Internet;WWW;Browser;Web;Explorador;Navegador
 Keywords[ru]=Internet;WWW;Browser;Web;Explorer;интернет;браузер;веб;файрфокс;огнелис
@@ -377,7 +316,7 @@ Name[ru]=Новое окно
 Name[sk]=Otvoriť nové okno
 Name[sl]=Odpri novo okno
 Name[sv]=Öppna ett nytt fönster
-Name[tr]=Yeni pencere aç 
+Name[tr]=Yeni pencere aç
 Name[ug]=يېڭى كۆزنەك ئېچىش
 Name[uk]=Відкрити нове вікно
 Name[vi]=Mở cửa sổ mới
@@ -407,7 +346,7 @@ Name[uk]=Відкрити нове вікно у потайливому режи
 Name[zh_TW]=開啟新隱私瀏覽視窗
 Exec=firefox -private-window
 EOF
-cat << EOF > $HOME/Desktop/codium.desktop
+cat << EOF > "$HOME/Desktop/codium.desktop"
 [Desktop Entry]
 Name=VSCodium
 Comment=Code Editing. Redefined.
@@ -427,9 +366,9 @@ Name=New Empty Window
 Exec=/usr/share/codium/codium --new-window %F
 Icon=vscodium
 EOF
-chown -R $USER:$USER $HOME/Desktop
+chown -R "$USER:$USER" "$HOME/Desktop"
 
-# cleanup
+# clearup
 PASSWORD=
 VNC_PASSWORD=
 
