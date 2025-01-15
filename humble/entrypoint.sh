@@ -162,6 +162,8 @@ touch $HOME/.ssh/config
 chmod 600 $HOME/.ssh/config
 echo 'Match host="192.168.*"' >> $HOME/.ssh/config
 echo 'IdentityFile ~/.ssh/id_rsa_turtlebot3' >> $HOME/.ssh/config
+echo 'StrictHostKeyChecking no' >> $HOME/.ssh/config
+chown -R $USER:$USER $HOME/.ssh
 
 # Add terminator shortcut
 mkdir -p $HOME/Desktop
