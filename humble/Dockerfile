@@ -99,6 +99,7 @@ RUN apt-get update -q && \
         ros-${ROS_DISTRO}-${INSTALL_PACKAGE} \
         ros-${ROS_DISTRO}-turtlebot3-msgs \
         ros-${ROS_DISTRO}-turtlebot3-description \
+        ros-${ROS_DISTRO}-turtlebot3-teleop \
         python3-argcomplete \
         python3-colcon-common-extensions \
         python3-rosdep python3-vcstool && \
@@ -128,6 +129,10 @@ RUN echo "deb [trusted=yes] https://download.eclipse.org/zenoh/debian-repo/ /" |
 
 # Enable apt-get completion after running `apt-get update` in the container
 RUN rm /etc/apt/apt.conf.d/docker-clean
+
+# Clone and build turtlebot3 simulation package
+RUN mkdir -p /opt/turtlebot3_ws/src && git clone https://github.com/mogi-ros/turtlebot3_simulations -b new_gazebo /opt/turtlebot3_ws/src
+RUN . /opt/ros/$ROS_DISTRO/setup.sh && cd /opt/turtlebot3_ws && colcon build
 
 COPY --chmod=755 ./entrypoint.sh /
 RUN dos2unix /entrypoint.sh

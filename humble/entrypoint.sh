@@ -79,6 +79,7 @@ echo "" >> $BASHRC_PATH
 echo "# ROS2 configuration" >> $BASHRC_PATH
 grep -F "source /opt/ros/$ROS_DISTRO/setup.bash" $BASHRC_PATH || echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> $BASHRC_PATH
 grep -F "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" $BASHRC_PATH || echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> $BASHRC_PATH
+echo 'source /opt/turtlebot3_ws/install/local_setup.bash' >> $BASHRC_PATH
 echo 'source $HOME/ros2_ws/install/local_setup.bash' >> $BASHRC_PATH
 echo 'export TURTLEBOT3_MODEL="burger"' >> $BASHRC_PATH
 echo 'export ROS_DOMAIN_ID=30' >> $BASHRC_PATH
