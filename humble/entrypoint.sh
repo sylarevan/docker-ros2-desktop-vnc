@@ -74,6 +74,7 @@ EOF
 
 # colcon
 BASHRC_PATH=$HOME/.bashrc
+mkdir -p $HOME/ros2_ws/src
 cp /root/.bashrc $BASHRC_PATH
 echo "" >> $BASHRC_PATH
 echo "# ROS2 configuration" >> $BASHRC_PATH
