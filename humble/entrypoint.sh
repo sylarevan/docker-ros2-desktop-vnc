@@ -95,7 +95,7 @@ if [ ! -f $SETUP_FILE ]; then
 
     # colcon default configuration
     mkdir $HOME/.colcon
-    cat << EOF > $HOME/.colcon/default.yaml
+    cat << EOF > $HOME/.colcon/defaults.yaml
     {
         "build": {
             "symlink-install": true,
