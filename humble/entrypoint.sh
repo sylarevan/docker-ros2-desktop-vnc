@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SETUP_FILE=/root/.config
-if [ ! -f $SETUP_FILE ]; then
+if [ ! -f $SETUP_FILE ]; then # lets configure the container at first run only
 
     # Create User
     USER=${USER:-root}
@@ -33,47 +33,47 @@ if [ ! -f $SETUP_FILE ]; then
     # xstartup
     XSTARTUP_PATH=$HOME/.vnc/xstartup
     cat << EOF > $XSTARTUP_PATH
-    #!/bin/sh
-    unset DBUS_SESSION_BUS_ADDRESS
-    mate-session
-    EOF
+#!/bin/sh
+unset DBUS_SESSION_BUS_ADDRESS
+mate-session
+EOF
     chown $USER:$USER $XSTARTUP_PATH
     chmod 755 $XSTARTUP_PATH
 
     # vncserver launch
     VNCRUN_PATH=$HOME/.vnc/vnc_run.sh
     cat << EOF > $VNCRUN_PATH
-    #!/bin/sh
+#!/bin/sh
 
-    # Workaround for issue when image is created with "docker commit".
-    # Thanks to @SaadRana17
-    # https://github.com/Tiryoh/docker-ros2-desktop-vnc/issues/131#issuecomment-2184156856
+# Workaround for issue when image is created with "docker commit".
+# Thanks to @SaadRana17
+# https://github.com/Tiryoh/docker-ros2-desktop-vnc/issues/131#issuecomment-2184156856
 
-    if [ -e /tmp/.X1-lock ]; then
-        rm -f /tmp/.X1-lock
-    fi
-    if [ -e /tmp/.X11-unix/X1 ]; then
-        rm -f /tmp/.X11-unix/X1
-    fi
+if [ -e /tmp/.X1-lock ]; then
+    rm -f /tmp/.X1-lock
+fi
+if [ -e /tmp/.X11-unix/X1 ]; then
+    rm -f /tmp/.X11-unix/X1
+fi
 
-    if [ $(uname -m) = "aarch64" ]; then
-        LD_PRELOAD=/lib/aarch64-linux-gnu/libgcc_s.so.1 vncserver :5 -fg -geometry 1920x1080 -depth 24
-    else
-        vncserver :5 -fg -geometry 1920x1080 -depth 24
-    fi
-    EOF
+if [ $(uname -m) = "aarch64" ]; then
+    LD_PRELOAD=/lib/aarch64-linux-gnu/libgcc_s.so.1 vncserver :5 -fg -geometry 1920x1080 -depth 24
+else
+    vncserver :5 -fg -geometry 1920x1080 -depth 24
+fi
+EOF
 
     # Supervisor
     CONF_PATH=/etc/supervisor/conf.d/supervisord.conf
     cat << EOF > $CONF_PATH
-    [supervisord]
-    nodaemon=true
-    user=root
-    [program:vnc]
-    command=gosu '$USER' bash '$VNCRUN_PATH'
-    [program:novnc]
-    command=gosu '$USER' bash -c "websockify --web=/usr/lib/novnc 6080 localhost:5905"
-    EOF
+[supervisord]
+nodaemon=true
+user=root
+[program:vnc]
+command=gosu '$USER' bash '$VNCRUN_PATH'
+[program:novnc]
+command=gosu '$USER' bash -c "websockify --web=/usr/lib/novnc 6080 localhost:5905"
+EOF
 
     # bashrc
     BASHRC_PATH=$HOME/.bashrc
@@ -96,12 +96,12 @@ if [ ! -f $SETUP_FILE ]; then
     # colcon default configuration
     mkdir $HOME/.colcon
     cat << EOF > $HOME/.colcon/defaults.yaml
-    {
-        "build": {
-            "symlink-install": true,
-        }
+{
+    "build": {
+        "symlink-install": true,
     }
-    EOF
+}
+EOF
     chown -R $USER:$USER $HOME/.colcon
 
     # Fix rosdep permission
@@ -113,56 +113,56 @@ if [ ! -f $SETUP_FILE ]; then
     mkdir -p $HOME/.ssh
     chmod 700 $HOME/.ssh
     cat << EOF > $HOME/.ssh/id_rsa_turtlebot3
-    -----BEGIN OPENSSH PRIVATE KEY-----
-    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
-    -----END OPENSSH PRIVATE KEY-----
-    EOF
+-----BEGIN OPENSSH PRIVATE KEY-----
+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
+-----END OPENSSH PRIVATE KEY-----
+EOF
     chmod 600 $HOME/.ssh/id_rsa_turtlebot3
     touch $HOME/.ssh/config
     chmod 600 $HOME/.ssh/config
@@ -174,267 +174,267 @@ if [ ! -f $SETUP_FILE ]; then
     # Add terminator shortcut
     mkdir -p $HOME/Desktop
     cat << EOF > $HOME/Desktop/terminator.desktop
-    [Desktop Entry]
-    Name=Terminator
-    Comment=Multiple terminals in one window
-    TryExec=terminator
-    Exec=terminator
-    Icon=terminator
-    Type=Application
-    Categories=GNOME;GTK;Utility;TerminalEmulator;System;
-    StartupNotify=true
-    X-Ubuntu-Gettext-Domain=terminator
-    X-Ayatana-Desktop-Shortcuts=NewWindow;
-    Keywords=terminal;shell;prompt;command;commandline;
-    [NewWindow Shortcut Group]
-    Name=Open a New Window
-    Exec=terminator
-    TargetEnvironment=Unity
-    EOF
+[Desktop Entry]
+Name=Terminator
+Comment=Multiple terminals in one window
+TryExec=terminator
+Exec=terminator
+Icon=terminator
+Type=Application
+Categories=GNOME;GTK;Utility;TerminalEmulator;System;
+StartupNotify=true
+X-Ubuntu-Gettext-Domain=terminator
+X-Ayatana-Desktop-Shortcuts=NewWindow;
+Keywords=terminal;shell;prompt;command;commandline;
+[NewWindow Shortcut Group]
+Name=Open a New Window
+Exec=terminator
+TargetEnvironment=Unity
+EOF
     cat << EOF > $HOME/Desktop/firefox.desktop
-    [Desktop Entry]
-    Version=1.0
-    Name=Firefox Web Browser
-    Name[ar]=متصفح الويب فَيَرفُكْس
-    Name[ast]=Restolador web Firefox
-    Name[bn]=ফায়ারফক্স ওয়েব ব্রাউজার
-    Name[ca]=Navegador web Firefox
-    Name[cs]=Firefox Webový prohlížeč
-    Name[da]=Firefox - internetbrowser
-    Name[el]=Περιηγητής Firefox
-    Name[es]=Navegador web Firefox
-    Name[et]=Firefoxi veebibrauser
-    Name[fa]=مرورگر اینترنتی Firefox
-    Name[fi]=Firefox-selain
-    Name[fr]=Navigateur Web Firefox
-    Name[gl]=Navegador web Firefox
-    Name[he]=דפדפן האינטרנט Firefox
-    Name[hr]=Firefox web preglednik
-    Name[hu]=Firefox webböngésző
-    Name[it]=Firefox Browser Web
-    Name[ja]=Firefox ウェブ・ブラウザ
-    Name[ko]=Firefox 웹 브라우저
-    Name[ku]=Geroka torê Firefox
-    Name[lt]=Firefox interneto naršyklė
-    Name[nb]=Firefox Nettleser
-    Name[nl]=Firefox webbrowser
-    Name[nn]=Firefox Nettlesar
-    Name[no]=Firefox Nettleser
-    Name[pl]=Przeglądarka WWW Firefox
-    Name[pt]=Firefox Navegador Web
-    Name[pt_BR]=Navegador Web Firefox
-    Name[ro]=Firefox – Navigator Internet
-    Name[ru]=Веб-браузер Firefox
-    Name[sk]=Firefox - internetový prehliadač
-    Name[sl]=Firefox spletni brskalnik
-    Name[sv]=Firefox webbläsare
-    Name[tr]=Firefox Web Tarayıcısı
-    Name[ug]=Firefox توركۆرگۈ
-    Name[uk]=Веб-браузер Firefox
-    Name[vi]=Trình duyệt web Firefox
-    Name[zh_CN]=Firefox 网络浏览器
-    Name[zh_TW]=Firefox 網路瀏覽器
-    Comment=Browse the World Wide Web
-    Comment[ar]=تصفح الشبكة العنكبوتية العالمية
-    Comment[ast]=Restola pela Rede
-    Comment[bn]=ইন্টারনেট ব্রাউজ করুন
-    Comment[ca]=Navegueu per la web
-    Comment[cs]=Prohlížení stránek World Wide Webu
-    Comment[da]=Surf på internettet
-    Comment[de]=Im Internet surfen
-    Comment[el]=Μπορείτε να περιηγηθείτε στο διαδίκτυο (Web)
-    Comment[es]=Navegue por la web
-    Comment[et]=Lehitse veebi
-    Comment[fa]=صفحات شبکه جهانی اینترنت را مرور نمایید
-    Comment[fi]=Selaa Internetin WWW-sivuja
-    Comment[fr]=Naviguer sur le Web
-    Comment[gl]=Navegar pola rede
-    Comment[he]=גלישה ברחבי האינטרנט
-    Comment[hr]=Pretražite web
-    Comment[hu]=A világháló böngészése
-    Comment[it]=Esplora il web
-    Comment[ja]=ウェブを閲覧します
-    Comment[ko]=웹을 돌아 다닙니다
-    Comment[ku]=Li torê bigere
-    Comment[lt]=Naršykite internete
-    Comment[nb]=Surf på nettet
-    Comment[nl]=Verken het internet
-    Comment[nn]=Surf på nettet
-    Comment[no]=Surf på nettet
-    Comment[pl]=Przeglądanie stron WWW 
-    Comment[pt]=Navegue na Internet
-    Comment[pt_BR]=Navegue na Internet
-    Comment[ro]=Navigați pe Internet
-    Comment[ru]=Доступ в Интернет
-    Comment[sk]=Prehliadanie internetu
-    Comment[sl]=Brskajte po spletu
-    Comment[sv]=Surfa på webben
-    Comment[tr]=İnternet'te Gezinin
-    Comment[ug]=دۇنيادىكى توربەتلەرنى كۆرگىلى بولىدۇ
-    Comment[uk]=Перегляд сторінок Інтернету
-    Comment[vi]=Để duyệt các trang web
-    Comment[zh_CN]=浏览互联网
-    Comment[zh_TW]=瀏覽網際網路
-    GenericName=Web Browser
-    GenericName[ar]=متصفح ويب
-    GenericName[ast]=Restolador Web
-    GenericName[bn]=ওয়েব ব্রাউজার
-    GenericName[ca]=Navegador web
-    GenericName[cs]=Webový prohlížeč
-    GenericName[da]=Webbrowser
-    GenericName[el]=Περιηγητής διαδικτύου
-    GenericName[es]=Navegador web
-    GenericName[et]=Veebibrauser
-    GenericName[fa]=مرورگر اینترنتی
-    GenericName[fi]=WWW-selain
-    GenericName[fr]=Navigateur Web
-    GenericName[gl]=Navegador Web
-    GenericName[he]=דפדפן אינטרנט
-    GenericName[hr]=Web preglednik
-    GenericName[hu]=Webböngésző
-    GenericName[it]=Browser web
-    GenericName[ja]=ウェブ・ブラウザ
-    GenericName[ko]=웹 브라우저
-    GenericName[ku]=Geroka torê
-    GenericName[lt]=Interneto naršyklė
-    GenericName[nb]=Nettleser
-    GenericName[nl]=Webbrowser
-    GenericName[nn]=Nettlesar
-    GenericName[no]=Nettleser
-    GenericName[pl]=Przeglądarka WWW
-    GenericName[pt]=Navegador Web
-    GenericName[pt_BR]=Navegador Web
-    GenericName[ro]=Navigator Internet
-    GenericName[ru]=Веб-браузер
-    GenericName[sk]=Internetový prehliadač
-    GenericName[sl]=Spletni brskalnik
-    GenericName[sv]=Webbläsare
-    GenericName[tr]=Web Tarayıcı
-    GenericName[ug]=توركۆرگۈ
-    GenericName[uk]=Веб-браузер
-    GenericName[vi]=Trình duyệt Web
-    GenericName[zh_CN]=网络浏览器
-    GenericName[zh_TW]=網路瀏覽器
-    Keywords=Internet;WWW;Browser;Web;Explorer
-    Keywords[ar]=انترنت;إنترنت;متصفح;ويب;وب
-    Keywords[ast]=Internet;WWW;Restolador;Web;Esplorador
-    Keywords[ca]=Internet;WWW;Navegador;Web;Explorador;Explorer
-    Keywords[cs]=Internet;WWW;Prohlížeč;Web;Explorer
-    Keywords[da]=Internet;Internettet;WWW;Browser;Browse;Web;Surf;Nettet
-    Keywords[de]=Internet;WWW;Browser;Web;Explorer;Webseite;Site;surfen;online;browsen
-    Keywords[el]=Internet;WWW;Browser;Web;Explorer;Διαδίκτυο;Περιηγητής;Firefox;Φιρεφοχ;Ιντερνετ
-    Keywords[es]=Explorador;Internet;WWW
-    Keywords[fi]=Internet;WWW;Browser;Web;Explorer;selain;Internet-selain;internetselain;verkkoselain;netti;surffaa
-    Keywords[fr]=Internet;WWW;Browser;Web;Explorer;Fureteur;Surfer;Navigateur
-    Keywords[he]=דפדפן;אינטרנט;רשת;אתרים;אתר;פיירפוקס;מוזילה;
-    Keywords[hr]=Internet;WWW;preglednik;Web
-    Keywords[hu]=Internet;WWW;Böngésző;Web;Háló;Net;Explorer
-    Keywords[it]=Internet;WWW;Browser;Web;Navigatore
-    Keywords[is]=Internet;WWW;Vafri;Vefur;Netvafri;Flakk
-    Keywords[ja]=Internet;WWW;Web;インターネット;ブラウザ;ウェブ;エクスプローラ
-    Keywords[nb]=Internett;WWW;Nettleser;Explorer;Web;Browser;Nettside
-    Keywords[nl]=Internet;WWW;Browser;Web;Explorer;Verkenner;Website;Surfen;Online 
-    Keywords[pt]=Internet;WWW;Browser;Web;Explorador;Navegador
-    Keywords[pt_BR]=Internet;WWW;Browser;Web;Explorador;Navegador
-    Keywords[ru]=Internet;WWW;Browser;Web;Explorer;интернет;браузер;веб;файрфокс;огнелис
-    Keywords[sk]=Internet;WWW;Prehliadač;Web;Explorer
-    Keywords[sl]=Internet;WWW;Browser;Web;Explorer;Brskalnik;Splet
-    Keywords[tr]=İnternet;WWW;Tarayıcı;Web;Gezgin;Web sitesi;Site;sörf;çevrimiçi;tara
-    Keywords[uk]=Internet;WWW;Browser;Web;Explorer;Інтернет;мережа;переглядач;оглядач;браузер;веб;файрфокс;вогнелис;перегляд
-    Keywords[vi]=Internet;WWW;Browser;Web;Explorer;Trình duyệt;Trang web
-    Keywords[zh_CN]=Internet;WWW;Browser;Web;Explorer;网页;浏览;上网;火狐;Firefox;ff;互联网;网站;
-    Keywords[zh_TW]=Internet;WWW;Browser;Web;Explorer;網際網路;網路;瀏覽器;上網;網頁;火狐
-    Exec=firefox %u
-    Terminal=false
-    X-MultipleArgs=false
-    Type=Application
-    Icon=firefox
-    Categories=GNOME;GTK;Network;WebBrowser;
-    MimeType=text/html;text/xml;application/xhtml+xml;application/xml;application/rss+xml;application/rdf+xml;image/gif;image/jpeg;image/png;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/ftp;x-scheme-handler/chrome;video/webm;application/x-xpinstall;
-    StartupNotify=true
-    Actions=new-window;new-private-window;
+[Desktop Entry]
+Version=1.0
+Name=Firefox Web Browser
+Name[ar]=متصفح الويب فَيَرفُكْس
+Name[ast]=Restolador web Firefox
+Name[bn]=ফায়ারফক্স ওয়েব ব্রাউজার
+Name[ca]=Navegador web Firefox
+Name[cs]=Firefox Webový prohlížeč
+Name[da]=Firefox - internetbrowser
+Name[el]=Περιηγητής Firefox
+Name[es]=Navegador web Firefox
+Name[et]=Firefoxi veebibrauser
+Name[fa]=مرورگر اینترنتی Firefox
+Name[fi]=Firefox-selain
+Name[fr]=Navigateur Web Firefox
+Name[gl]=Navegador web Firefox
+Name[he]=דפדפן האינטרנט Firefox
+Name[hr]=Firefox web preglednik
+Name[hu]=Firefox webböngésző
+Name[it]=Firefox Browser Web
+Name[ja]=Firefox ウェブ・ブラウザ
+Name[ko]=Firefox 웹 브라우저
+Name[ku]=Geroka torê Firefox
+Name[lt]=Firefox interneto naršyklė
+Name[nb]=Firefox Nettleser
+Name[nl]=Firefox webbrowser
+Name[nn]=Firefox Nettlesar
+Name[no]=Firefox Nettleser
+Name[pl]=Przeglądarka WWW Firefox
+Name[pt]=Firefox Navegador Web
+Name[pt_BR]=Navegador Web Firefox
+Name[ro]=Firefox – Navigator Internet
+Name[ru]=Веб-браузер Firefox
+Name[sk]=Firefox - internetový prehliadač
+Name[sl]=Firefox spletni brskalnik
+Name[sv]=Firefox webbläsare
+Name[tr]=Firefox Web Tarayıcısı
+Name[ug]=Firefox توركۆرگۈ
+Name[uk]=Веб-браузер Firefox
+Name[vi]=Trình duyệt web Firefox
+Name[zh_CN]=Firefox 网络浏览器
+Name[zh_TW]=Firefox 網路瀏覽器
+Comment=Browse the World Wide Web
+Comment[ar]=تصفح الشبكة العنكبوتية العالمية
+Comment[ast]=Restola pela Rede
+Comment[bn]=ইন্টারনেট ব্রাউজ করুন
+Comment[ca]=Navegueu per la web
+Comment[cs]=Prohlížení stránek World Wide Webu
+Comment[da]=Surf på internettet
+Comment[de]=Im Internet surfen
+Comment[el]=Μπορείτε να περιηγηθείτε στο διαδίκτυο (Web)
+Comment[es]=Navegue por la web
+Comment[et]=Lehitse veebi
+Comment[fa]=صفحات شبکه جهانی اینترنت را مرور نمایید
+Comment[fi]=Selaa Internetin WWW-sivuja
+Comment[fr]=Naviguer sur le Web
+Comment[gl]=Navegar pola rede
+Comment[he]=גלישה ברחבי האינטרנט
+Comment[hr]=Pretražite web
+Comment[hu]=A világháló böngészése
+Comment[it]=Esplora il web
+Comment[ja]=ウェブを閲覧します
+Comment[ko]=웹을 돌아 다닙니다
+Comment[ku]=Li torê bigere
+Comment[lt]=Naršykite internete
+Comment[nb]=Surf på nettet
+Comment[nl]=Verken het internet
+Comment[nn]=Surf på nettet
+Comment[no]=Surf på nettet
+Comment[pl]=Przeglądanie stron WWW 
+Comment[pt]=Navegue na Internet
+Comment[pt_BR]=Navegue na Internet
+Comment[ro]=Navigați pe Internet
+Comment[ru]=Доступ в Интернет
+Comment[sk]=Prehliadanie internetu
+Comment[sl]=Brskajte po spletu
+Comment[sv]=Surfa på webben
+Comment[tr]=İnternet'te Gezinin
+Comment[ug]=دۇنيادىكى توربەتلەرنى كۆرگىلى بولىدۇ
+Comment[uk]=Перегляд сторінок Інтернету
+Comment[vi]=Để duyệt các trang web
+Comment[zh_CN]=浏览互联网
+Comment[zh_TW]=瀏覽網際網路
+GenericName=Web Browser
+GenericName[ar]=متصفح ويب
+GenericName[ast]=Restolador Web
+GenericName[bn]=ওয়েব ব্রাউজার
+GenericName[ca]=Navegador web
+GenericName[cs]=Webový prohlížeč
+GenericName[da]=Webbrowser
+GenericName[el]=Περιηγητής διαδικτύου
+GenericName[es]=Navegador web
+GenericName[et]=Veebibrauser
+GenericName[fa]=مرورگر اینترنتی
+GenericName[fi]=WWW-selain
+GenericName[fr]=Navigateur Web
+GenericName[gl]=Navegador Web
+GenericName[he]=דפדפן אינטרנט
+GenericName[hr]=Web preglednik
+GenericName[hu]=Webböngésző
+GenericName[it]=Browser web
+GenericName[ja]=ウェブ・ブラウザ
+GenericName[ko]=웹 브라우저
+GenericName[ku]=Geroka torê
+GenericName[lt]=Interneto naršyklė
+GenericName[nb]=Nettleser
+GenericName[nl]=Webbrowser
+GenericName[nn]=Nettlesar
+GenericName[no]=Nettleser
+GenericName[pl]=Przeglądarka WWW
+GenericName[pt]=Navegador Web
+GenericName[pt_BR]=Navegador Web
+GenericName[ro]=Navigator Internet
+GenericName[ru]=Веб-браузер
+GenericName[sk]=Internetový prehliadač
+GenericName[sl]=Spletni brskalnik
+GenericName[sv]=Webbläsare
+GenericName[tr]=Web Tarayıcı
+GenericName[ug]=توركۆرگۈ
+GenericName[uk]=Веб-браузер
+GenericName[vi]=Trình duyệt Web
+GenericName[zh_CN]=网络浏览器
+GenericName[zh_TW]=網路瀏覽器
+Keywords=Internet;WWW;Browser;Web;Explorer
+Keywords[ar]=انترنت;إنترنت;متصفح;ويب;وب
+Keywords[ast]=Internet;WWW;Restolador;Web;Esplorador
+Keywords[ca]=Internet;WWW;Navegador;Web;Explorador;Explorer
+Keywords[cs]=Internet;WWW;Prohlížeč;Web;Explorer
+Keywords[da]=Internet;Internettet;WWW;Browser;Browse;Web;Surf;Nettet
+Keywords[de]=Internet;WWW;Browser;Web;Explorer;Webseite;Site;surfen;online;browsen
+Keywords[el]=Internet;WWW;Browser;Web;Explorer;Διαδίκτυο;Περιηγητής;Firefox;Φιρεφοχ;Ιντερνετ
+Keywords[es]=Explorador;Internet;WWW
+Keywords[fi]=Internet;WWW;Browser;Web;Explorer;selain;Internet-selain;internetselain;verkkoselain;netti;surffaa
+Keywords[fr]=Internet;WWW;Browser;Web;Explorer;Fureteur;Surfer;Navigateur
+Keywords[he]=דפדפן;אינטרנט;רשת;אתרים;אתר;פיירפוקס;מוזילה;
+Keywords[hr]=Internet;WWW;preglednik;Web
+Keywords[hu]=Internet;WWW;Böngésző;Web;Háló;Net;Explorer
+Keywords[it]=Internet;WWW;Browser;Web;Navigatore
+Keywords[is]=Internet;WWW;Vafri;Vefur;Netvafri;Flakk
+Keywords[ja]=Internet;WWW;Web;インターネット;ブラウザ;ウェブ;エクスプローラ
+Keywords[nb]=Internett;WWW;Nettleser;Explorer;Web;Browser;Nettside
+Keywords[nl]=Internet;WWW;Browser;Web;Explorer;Verkenner;Website;Surfen;Online 
+Keywords[pt]=Internet;WWW;Browser;Web;Explorador;Navegador
+Keywords[pt_BR]=Internet;WWW;Browser;Web;Explorador;Navegador
+Keywords[ru]=Internet;WWW;Browser;Web;Explorer;интернет;браузер;веб;файрфокс;огнелис
+Keywords[sk]=Internet;WWW;Prehliadač;Web;Explorer
+Keywords[sl]=Internet;WWW;Browser;Web;Explorer;Brskalnik;Splet
+Keywords[tr]=İnternet;WWW;Tarayıcı;Web;Gezgin;Web sitesi;Site;sörf;çevrimiçi;tara
+Keywords[uk]=Internet;WWW;Browser;Web;Explorer;Інтернет;мережа;переглядач;оглядач;браузер;веб;файрфокс;вогнелис;перегляд
+Keywords[vi]=Internet;WWW;Browser;Web;Explorer;Trình duyệt;Trang web
+Keywords[zh_CN]=Internet;WWW;Browser;Web;Explorer;网页;浏览;上网;火狐;Firefox;ff;互联网;网站;
+Keywords[zh_TW]=Internet;WWW;Browser;Web;Explorer;網際網路;網路;瀏覽器;上網;網頁;火狐
+Exec=firefox %u
+Terminal=false
+X-MultipleArgs=false
+Type=Application
+Icon=firefox
+Categories=GNOME;GTK;Network;WebBrowser;
+MimeType=text/html;text/xml;application/xhtml+xml;application/xml;application/rss+xml;application/rdf+xml;image/gif;image/jpeg;image/png;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/ftp;x-scheme-handler/chrome;video/webm;application/x-xpinstall;
+StartupNotify=true
+Actions=new-window;new-private-window;
 
-    [Desktop Action new-window]
-    Name=Open a New Window
-    Name[ar]=افتح نافذة جديدة
-    Name[ast]=Abrir una ventana nueva
-    Name[bn]=Abrir una ventana nueva
-    Name[ca]=Obre una finestra nova
-    Name[cs]=Otevřít nové okno
-    Name[da]=Åbn et nyt vindue
-    Name[de]=Ein neues Fenster öffnen
-    Name[el]=Νέο παράθυρο
-    Name[es]=Abrir una ventana nueva
-    Name[fi]=Avaa uusi ikkuna
-    Name[fr]=Ouvrir une nouvelle fenêtre
-    Name[gl]=Abrir unha nova xanela
-    Name[he]=פתיחת חלון חדש
-    Name[hr]=Otvori novi prozor
-    Name[hu]=Új ablak nyitása
-    Name[it]=Apri una nuova finestra
-    Name[ja]=新しいウィンドウを開く
-    Name[ko]=새 창 열기
-    Name[ku]=Paceyeke nû veke
-    Name[lt]=Atverti naują langą
-    Name[nb]=Åpne et nytt vindu
-    Name[nl]=Nieuw venster openen
-    Name[pt]=Abrir nova janela
-    Name[pt_BR]=Abrir nova janela
-    Name[ro]=Deschide o fereastră nouă
-    Name[ru]=Новое окно
-    Name[sk]=Otvoriť nové okno
-    Name[sl]=Odpri novo okno
-    Name[sv]=Öppna ett nytt fönster
-    Name[tr]=Yeni pencere aç 
-    Name[ug]=يېڭى كۆزنەك ئېچىش
-    Name[uk]=Відкрити нове вікно
-    Name[vi]=Mở cửa sổ mới
-    Name[zh_CN]=新建窗口
-    Name[zh_TW]=開啟新視窗
-    Exec=firefox -new-window
+[Desktop Action new-window]
+Name=Open a New Window
+Name[ar]=افتح نافذة جديدة
+Name[ast]=Abrir una ventana nueva
+Name[bn]=Abrir una ventana nueva
+Name[ca]=Obre una finestra nova
+Name[cs]=Otevřít nové okno
+Name[da]=Åbn et nyt vindue
+Name[de]=Ein neues Fenster öffnen
+Name[el]=Νέο παράθυρο
+Name[es]=Abrir una ventana nueva
+Name[fi]=Avaa uusi ikkuna
+Name[fr]=Ouvrir une nouvelle fenêtre
+Name[gl]=Abrir unha nova xanela
+Name[he]=פתיחת חלון חדש
+Name[hr]=Otvori novi prozor
+Name[hu]=Új ablak nyitása
+Name[it]=Apri una nuova finestra
+Name[ja]=新しいウィンドウを開く
+Name[ko]=새 창 열기
+Name[ku]=Paceyeke nû veke
+Name[lt]=Atverti naują langą
+Name[nb]=Åpne et nytt vindu
+Name[nl]=Nieuw venster openen
+Name[pt]=Abrir nova janela
+Name[pt_BR]=Abrir nova janela
+Name[ro]=Deschide o fereastră nouă
+Name[ru]=Новое окно
+Name[sk]=Otvoriť nové okno
+Name[sl]=Odpri novo okno
+Name[sv]=Öppna ett nytt fönster
+Name[tr]=Yeni pencere aç 
+Name[ug]=يېڭى كۆزنەك ئېچىش
+Name[uk]=Відкрити нове вікно
+Name[vi]=Mở cửa sổ mới
+Name[zh_CN]=新建窗口
+Name[zh_TW]=開啟新視窗
+Exec=firefox -new-window
 
-    [Desktop Action new-private-window]
-    Name=Open a New Private Window
-    Name[ar]=افتح نافذة جديدة للتصفح الخاص
-    Name[ca]=Obre una finestra nova en mode d'incògnit
-    Name[cs]=Otevřít nové anonymní okno
-    Name[de]=Ein neues privates Fenster öffnen
-    Name[el]=Νέο ιδιωτικό παράθυρο
-    Name[es]=Abrir una ventana privada nueva
-    Name[fi]=Avaa uusi yksityinen ikkuna
-    Name[fr]=Ouvrir une nouvelle fenêtre de navigation privée
-    Name[he]=פתיחת חלון גלישה פרטית חדש
-    Name[hu]=Új privát ablak nyitása
-    Name[it]=Apri una nuova finestra anonima
-    Name[nb]=Åpne et nytt privat vindu
-    Name[ru]=Новое приватное окно
-    Name[sl]=Odpri novo okno zasebnega brskanja
-    Name[sv]=Öppna ett nytt privat fönster
-    Name[tr]=Yeni gizli pencere aç
-    Name[uk]=Відкрити нове вікно у потайливому режимі
-    Name[zh_TW]=開啟新隱私瀏覽視窗
-    Exec=firefox -private-window
-    EOF
+[Desktop Action new-private-window]
+Name=Open a New Private Window
+Name[ar]=افتح نافذة جديدة للتصفح الخاص
+Name[ca]=Obre una finestra nova en mode d'incògnit
+Name[cs]=Otevřít nové anonymní okno
+Name[de]=Ein neues privates Fenster öffnen
+Name[el]=Νέο ιδιωτικό παράθυρο
+Name[es]=Abrir una ventana privada nueva
+Name[fi]=Avaa uusi yksityinen ikkuna
+Name[fr]=Ouvrir une nouvelle fenêtre de navigation privée
+Name[he]=פתיחת חלון גלישה פרטית חדש
+Name[hu]=Új privát ablak nyitása
+Name[it]=Apri una nuova finestra anonima
+Name[nb]=Åpne et nytt privat vindu
+Name[ru]=Новое приватное окно
+Name[sl]=Odpri novo okno zasebnega brskanja
+Name[sv]=Öppna ett nytt privat fönster
+Name[tr]=Yeni gizli pencere aç
+Name[uk]=Відкрити нове вікно у потайливому режимі
+Name[zh_TW]=開啟新隱私瀏覽視窗
+Exec=firefox -private-window
+EOF
     cat << EOF > $HOME/Desktop/codium.desktop
-    [Desktop Entry]
-    Name=VSCodium
-    Comment=Code Editing. Redefined.
-    GenericName=Text Editor
-    Exec=/usr/share/codium/codium --unity-launch %F
-    Icon=vscodium
-    Type=Application
-    StartupNotify=false
-    StartupWMClass=VSCodium
-    Categories=TextEditor;Development;IDE;
-    MimeType=text/plain;inode/directory;application/x-codium-workspace;
-    Actions=new-empty-window;
-    Keywords=vscode;
+[Desktop Entry]
+Name=VSCodium
+Comment=Code Editing. Redefined.
+GenericName=Text Editor
+Exec=/usr/share/codium/codium --unity-launch %F
+Icon=vscodium
+Type=Application
+StartupNotify=false
+StartupWMClass=VSCodium
+Categories=TextEditor;Development;IDE;
+MimeType=text/plain;inode/directory;application/x-codium-workspace;
+Actions=new-empty-window;
+Keywords=vscode;
 
-    [Desktop Action new-empty-window]
-    Name=New Empty Window
-    Exec=/usr/share/codium/codium --new-window %F
-    Icon=vscodium
-    EOF
+[Desktop Action new-empty-window]
+Name=New Empty Window
+Exec=/usr/share/codium/codium --new-window %F
+Icon=vscodium
+EOF
     chown -R $USER:$USER $HOME/Desktop
 
     # cleanup
