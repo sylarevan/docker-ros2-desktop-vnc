@@ -32,7 +32,7 @@ RUN apt-get update -q && \
 # Install Ubuntu Mate desktop
 RUN apt-get update -q && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        ubuntu-mate-desktop && \
+    ubuntu-mate-desktop && \
     apt-get autoclean && \
     apt-get autoremove && \
     rm -rf /var/lib/apt/lists/*
@@ -40,11 +40,11 @@ RUN apt-get update -q && \
 # Add Package
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        tigervnc-standalone-server tigervnc-common \
-        supervisor wget curl gosu git sudo python3-pip tini \
-        build-essential vim sudo lsb-release locales \
-        bash-completion tzdata nano nextcloud-desktop terminator \
-        iputils-ping dos2unix && \
+    tigervnc-standalone-server tigervnc-common \
+    supervisor wget curl gosu git sudo python3-pip tini \
+    build-essential vim sudo lsb-release locales \
+    bash-completion tzdata nano nextcloud-desktop terminator \
+    iputils-ping dos2unix && \
     apt-get autoclean && \
     apt-get autoremove && \
     rm -rf /var/lib/apt/lists/*
@@ -96,13 +96,15 @@ RUN apt-get update -q && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null && \
     apt-get update -q && \
     apt-get install -y \
-        ros-${ROS_DISTRO}-${INSTALL_PACKAGE} \
-        ros-${ROS_DISTRO}-turtlebot3-msgs \
-        ros-${ROS_DISTRO}-turtlebot3-description \
-        ros-${ROS_DISTRO}-turtlebot3-teleop \
-        python3-argcomplete \
-        python3-colcon-common-extensions \
-        python3-rosdep python3-vcstool && \
+    ros-${ROS_DISTRO}-${INSTALL_PACKAGE} \
+    ros-${ROS_DISTRO}-turtlebot3-msgs \
+    ros-${ROS_DISTRO}-turtlebot3-description \
+    ros-${ROS_DISTRO}-turtlebot3-teleop \
+    ros-${ROS_DISTRO}-joint-state-publisher \
+    ros-${ROS_DISTRO}-joint-state-publisher-gui \
+    python3-argcomplete \
+    python3-colcon-common-extensions \
+    python3-rosdep python3-vcstool && \
     rosdep init && \
     rm -rf /var/lib/apt/lists/*
 
@@ -113,8 +115,8 @@ RUN curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyri
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null && \
     apt-get update -q && \
     apt-get install -y \ 
-        ignition-fortress \
-        ros-${ROS_DISTRO}-ros-gz && \
+    ignition-fortress \
+    ros-${ROS_DISTRO}-ros-gz && \
     apt-get autoclean && \
     apt-get autoremove && \
     rm -rf /var/lib/apt/lists/*
