@@ -136,6 +136,9 @@ RUN rm /etc/apt/apt.conf.d/docker-clean
 RUN mkdir -p /opt/turtlebot3_ws/src && git clone https://github.com/mogi-ros/turtlebot3_simulations -b new_gazebo /opt/turtlebot3_ws/src
 RUN . /opt/ros/$ROS_DISTRO/setup.sh && cd /opt/turtlebot3_ws && colcon build
 
+# Downgrade to numpy version <2 for cvbridge to work
+RUN pip install 'numpy<2'
+
 COPY --chmod=755 ./entrypoint.sh /
 RUN dos2unix /entrypoint.sh
 RUN ["chmod", "+x", "/entrypoint.sh"]
