@@ -137,7 +137,11 @@ RUN mkdir -p /opt/turtlebot3_ws/src && git clone https://github.com/mogi-ros/tur
 RUN . /opt/ros/$ROS_DISTRO/setup.sh && cd /opt/turtlebot3_ws && colcon build
 
 # Downgrade to numpy version <2 for cvbridge to work
+RUN pip install --upgrade opencv-python opencv-python-headless
 RUN pip install 'numpy<2'
+
+# Copy default ignition gui config file
+COPY ./gui.config /root/
 
 COPY --chmod=755 ./entrypoint.sh /
 RUN dos2unix /entrypoint.sh

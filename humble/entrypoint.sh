@@ -80,7 +80,7 @@ EOF
     mkdir -p $HOME/ros2_ws/src
     cp /root/.bashrc $BASHRC_PATH
     echo "" >> $BASHRC_PATH
-    echo "# ROS2 configuration" >> $BASHRC_PATH
+    echo '# ROS2 configuration' >> $BASHRC_PATH
     grep -F "source /opt/ros/$ROS_DISTRO/setup.bash" $BASHRC_PATH || echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> $BASHRC_PATH
     grep -F "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" $BASHRC_PATH || echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> $BASHRC_PATH
     echo 'source /opt/turtlebot3_ws/install/local_setup.bash' >> $BASHRC_PATH
@@ -91,6 +91,8 @@ EOF
     echo 'export ROBOT_IP=192.168.0.10' >> $BASHRC_PATH
     echo 'alias zenoh="zenoh-bridge-ros2dds -e tcp/$ROBOT_IP:7447"'
     echo 'alias colcon_clear="rm -r build install log"' >> $BASHRC_PATH
+    echo 'alias sb="source ~/.bashrc"' >> $BASHRC_PATH
+    echo 'alias eb="nano ~/.bashrc"' >> $BASHRC_PATH
     chown $USER:$USER $BASHRC_PATH
 
     # colcon default configuration
@@ -436,6 +438,11 @@ Exec=/usr/share/codium/codium --new-window %F
 Icon=vscodium
 EOF
     chown -R $USER:$USER $HOME/Desktop
+
+    # Ignition config file
+    mkdir -p $HOME/.ignition/gazebo/6
+    cp /root/gui.config $HOME/.ignition/gazebo/6/
+    chown -R $USER:$USER $HOME/.ignition
 
     # cleanup
     PASSWORD=
